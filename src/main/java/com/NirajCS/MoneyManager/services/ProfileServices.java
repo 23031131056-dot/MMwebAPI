@@ -31,7 +31,7 @@ public class ProfileServices {
         newProfile.setActivationToken(UUID.randomUUID().toString());
         newProfile = profileRepository.save(newProfile);
         //send activation email
-        String activationLink = "http://localhost:8080/api/v1.0/activate?token=" + newProfile.getActivationToken();
+        String activationLink = "https://mmwebapi.onrender.com/api/v1.0/activate?token=" + newProfile.getActivationToken();
         String subject = "Activate your MoneyManager account";
         String body = "Dear " + newProfile.getFullname() + ",\n\n"
                 + "Please click the following link to activate your account:\n"
