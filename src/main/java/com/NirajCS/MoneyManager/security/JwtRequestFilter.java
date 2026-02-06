@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -39,25 +40,42 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         try {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 jwt = authHeader.substring(7);
-                email = jwtUtil.extractUsername(jwt);
-            }
-            
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
-                if (jwtUtil.validateToken(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    logger.info("Authenticated user: {}", email);
-                } else {
-                    logger.warn("Token validation failed for user: {}", email);
+                logger.debug("JWT Token extracted from header");
+                
+                try {
+                    email = jwtUtil.extractUsername(jwt);
+                    logger.debug("Extracted email from JWT: {}", email);
+                } catch (Exception e) {
+                    logger.error("Failed to extract username from JWT: {}", e.getMessage());
                 }
             } else if (authHeader == null) {
                 logger.debug("No Authorization header provided");
+            } else {
+                logger.warn("Authorization header does not start with 'Bearer '");
+            }
+            
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                try {
+                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
+                    logger.debug("User details loaded for email: {}", email);
+                    
+                    if (jwt != null && jwtUtil.validateToken(jwt, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                        logger.info("User authenticated successfully: {}", email);
+                    } else {
+                        logger.warn("JWT token validation failed for user: {}", email);
+                        SecurityContextHolder.clearContext();
+                    }
+                } catch (UsernameNotFoundException e) {
+                    logger.warn("User not found in database: {}", email);
+                    SecurityContextHolder.clearContext();
+                }
             }
         } catch (Exception e) {
-            logger.error("Authentication error: {}", e.getMessage());
+            logger.error("Unexpected error in JWT filter: {}", e.getMessage(), e);
             SecurityContextHolder.clearContext();
         }
         

@@ -1,18 +1,16 @@
 
 package com.NirajCS.MoneyManager.services;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-    @Value("${spring.mail.properties.mail.smtp.from}")
-    private String fromEmail;
+    
+    private String fromEmail = "nirajyadav9136@gmail.com";
 
     private final JavaMailSender mailSender;
 

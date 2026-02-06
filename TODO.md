@@ -1,0 +1,3 @@
+- [x] Update Hibernate dialect in application.properties to PostgreSQL
+- [x] Remove MySQL dependency from pom.xml
+- [x] Rebuild the project to verify changes

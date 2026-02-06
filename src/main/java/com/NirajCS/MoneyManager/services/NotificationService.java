@@ -1,15 +1,11 @@
 package com.NirajCS.MoneyManager.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import com.NirajCS.MoneyManager.dto.ExpenseDTO;
 import com.NirajCS.MoneyManager.entity.ProfileEntity;
 import com.NirajCS.MoneyManager.repository.ProfileRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,8 +18,8 @@ public class NotificationService {
     private final ExpenseServices expenseServices;
     private final EmailService emailService;
 
-    @Value("${money.manager.frontend.url}")
-    private String frontendUrl;
+    
+    private String frontendUrl ="http://localhost:5173";
 
     @Scheduled(cron = "0 2 14 * * *") // Everyday at 2:02 pm (server time)
     public void sendDailyIncomeExpenseReminder(){
